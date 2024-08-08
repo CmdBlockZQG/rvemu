@@ -1,4 +1,3 @@
-#include "common.h"
 #include "utils.h"
 
 #include <cstdio>
@@ -34,11 +33,16 @@ static void parse_args(int argc, char *argv[]) {
 }
 
 void init_log(const char *filename);
+void init_soc();
+void load_img(const char *filename);
 
 int main(int argc, char *argv[]) {
   parse_args(argc, argv);
 
   init_log(log_file);
+  init_soc();
+
+  load_img(img_file);
 
   Log("Hello, rvemu!");
   return 0;
