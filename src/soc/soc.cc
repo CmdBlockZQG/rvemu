@@ -1,8 +1,8 @@
 #include "config.h"
-#include "device.h"
-#include <cassert>
-#include <cstdint>
-#include <cstdio>
+#include "soc.h"
+
+#include "local-include/device.h"
+
 #include <cstring>
 
 RAM mem {0x80000000, 128 * 1024 * 1024};

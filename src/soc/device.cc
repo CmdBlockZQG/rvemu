@@ -1,5 +1,5 @@
 #include "common.h"
-#include "device.h"
+#include "local-include/device.h"
 
 #include <cassert>
 #include <cstdint>
@@ -32,7 +32,7 @@ void RAM::write(paddr_t addr, int len, word_t data) {
     case 2: *static_cast<uint16_t *>(host_addr) = data; return;
     case 4: *static_cast<uint32_t *>(host_addr) = data; return;
     case 8:
-      if constexpr (CONF_RV64) {
+      if constexpr (xlen == 64) {
         *static_cast<uint64_t *>(host_addr) = data; return;
       } else assert(0);
     default:
@@ -50,7 +50,7 @@ word_t RAM::read(paddr_t addr, int len) {
     case 2: return *static_cast<uint16_t *>(host_addr);
     case 4: return *static_cast<uint32_t *>(host_addr);
     case 8:
-      if constexpr (CONF_RV64) {
+      if constexpr (xlen == 64) {
         return *static_cast<uint64_t *>(host_addr);
       } else assert(0);
     default:
