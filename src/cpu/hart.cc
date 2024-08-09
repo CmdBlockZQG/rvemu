@@ -13,3 +13,8 @@ void Hart::vaddr_write(vaddr_t addr, int len, word_t data) {
 word_t Hart::vaddr_read(vaddr_t addr, int len) {
   return paddr_read(addr, len);
 }
+
+word_t Hart::inst_fetch() {
+  vaddr_t pc = get_pc();
+  return vaddr_read(pc, 4);
+}

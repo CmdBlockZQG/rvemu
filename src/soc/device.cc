@@ -23,7 +23,7 @@ RAM::~RAM() {
 }
 
 void RAM::write(paddr_t addr, int len, word_t data) {
-  if constexpr (CONF_RT_CHECK) {
+  if constexpr (rt_check) {
     assert(in(addr) && in(addr + len - 1));
   }
   void *host_addr = ptr + (addr - base);
@@ -36,12 +36,12 @@ void RAM::write(paddr_t addr, int len, word_t data) {
         *static_cast<uint64_t *>(host_addr) = data; return;
       } else assert(0);
     default:
-      if constexpr (CONF_RT_CHECK) assert(0);
+      if constexpr (rt_check) assert(0);
   }
 }
 
 word_t RAM::read(paddr_t addr, int len) {
-  if constexpr (CONF_RT_CHECK) {
+  if constexpr (rt_check) {
     assert(in(addr) && in(addr + len - 1));
   }
   void *host_addr = ptr + (addr - base);
@@ -54,12 +54,12 @@ word_t RAM::read(paddr_t addr, int len) {
         return *static_cast<uint64_t *>(host_addr);
       } else assert(0);
     default:
-      if constexpr (CONF_RT_CHECK) assert(0);
+      if constexpr (rt_check) assert(0);
   }
 }
 
 void *RAM::get_ptr(paddr_t addr) {
-  if constexpr (CONF_RT_CHECK) {
+  if constexpr (rt_check) {
     assert(in(addr));
   }
   return ptr + (addr - base);

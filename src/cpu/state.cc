@@ -19,14 +19,14 @@ void HartState::set_pc(vaddr_t dnpc) {
 }
 
 word_t HartState::gpr_read(int id) {
-  if constexpr (CONF_RT_CHECK) {
+  if constexpr (rt_check) {
     assert(0 <= id && id < gpr_n);
   }
   return id ? gpr[id] : 0;
 }
 
 void HartState::gpr_write(int id, word_t data) {
-  if constexpr (CONF_RT_CHECK) {
+  if constexpr (rt_check) {
     assert(0 <= id && id < gpr_n);
   }
   if (id) gpr[id] = data;

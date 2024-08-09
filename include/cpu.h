@@ -33,9 +33,13 @@ class Hart : private HartState {
     void vaddr_write(vaddr_t addr, int len, word_t data);
     word_t vaddr_read(vaddr_t addr, int len);
   
+    word_t inst_fetch();
+
   public:
     Hart(int id);
     ~Hart();
+
+    void step();
 };
 
 #endif
