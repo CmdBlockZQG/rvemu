@@ -2,12 +2,16 @@
 #include "soc.h"
 
 #include "local-include/device.h"
+#include "local-include/ram.h"
+#include "local-include/uart.h"
 
 #include <cstring>
 
 RAM mem {0x80000000, 128 * 1024 * 1024};
+UART uart {0x09000000};
 static constexpr Device *devices[] = {
-  &mem
+  &mem,
+  &uart,
 };
 
 void init_soc() {
@@ -53,7 +57,6 @@ void load_img(const char *filename) {
       0x008002ef, // jal x5, 8
       0x00608113, // addi x2, x1, 6
       0x00310093, // addi x1, x2, 3
-      0x00108093, // addi x1, x1, 1
       0x00100073, // ebreak
       0xdeadbeef  // some data
     };
