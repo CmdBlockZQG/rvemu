@@ -22,7 +22,7 @@ static inline uint64_t bits(uint64_t x) {
 // 将B位补码进行符号拓展
 template<int B>
 static inline uint64_t sext(uint64_t x) {
-  struct { uint64_t x: B; } s;
+  struct { int64_t x: B; } s;
   return s.x = x;
 }
 

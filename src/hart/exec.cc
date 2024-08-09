@@ -14,19 +14,19 @@ void Hart::step() {
 
   inst_t op = opcode(inst);
 
-  vaddr_t dnpc = get_pc() + 4;
+  const vaddr_t pc = get_pc();
+  vaddr_t dnpc = pc + 4;
 
   if (op == 0b01101) { // LUI
     gpr_write(rd(inst), immU(inst));
   } else if (op == 0b00101) { // AUIPC
-    gpr_write(rd(inst), get_pc() + immU(inst));
-  } else
-  if (op == 0b11011) { // JAL
-    gpr_write(rd(inst), get_pc() + 4);
-    dnpc = get_pc() + immJ(inst);
+    gpr_write(rd(inst), pc + immU(inst));
+  } else if (op == 0b11011) { // JAL
+    dnpc = pc + immJ(inst);
+    gpr_write(rd(inst), pc + 4);
   } else if (op == 0b11001) { // JALR
-    gpr_write(rd(inst), get_pc() + 4);
     dnpc = (gpr_read(rs1(inst)) + immI(inst)) & ~1;
+    gpr_write(rd(inst), pc + 4);
   } else if (op == 0b11000) { // BRANCH
     word_t src1 = gpr_read(rs1(inst));
     word_t src2 = gpr_read(rs2(inst));
@@ -43,7 +43,7 @@ void Hart::step() {
     }
 
     if (jump_en) {
-      dnpc = get_pc() + immB(inst);
+      dnpc = pc + immB(inst);
     }
   } else if (op == 0b00000) { // LOAD
     vaddr_t addr = gpr_read(rs1(inst)) + immI(inst);
@@ -60,7 +60,7 @@ void Hart::step() {
 
     gpr_write(rd(inst), data);
   } else if (op == 0b01000) { // STORE
-    vaddr_t addr = gpr_read(rs1(inst)) + immI(inst);
+    vaddr_t addr = gpr_read(rs1(inst)) + immS(inst);
     word_t data = gpr_read(rs2(inst));
 
     switch (funct3(inst)) {
@@ -70,7 +70,7 @@ void Hart::step() {
       default: if constexpr (rt_check) assert(0);
     }
   } else if (op == 0b00100) { // CALRI
-    word_t src1 = gpr_read(rs2(inst));
+    word_t src1 = gpr_read(rs1(inst));
     word_t imm = immI(inst);
     word_t res;
 

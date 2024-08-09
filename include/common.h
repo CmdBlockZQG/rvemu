@@ -25,7 +25,7 @@
   #define FMT_PADDR "0x%08x"
 #endif
 
-constexpr inline int gpr_n = MUXNDEF(CONF_RVE, 16, 32);
+constexpr inline int gpr_n = MUXDEF(CONF_RVE, 16, 32);
 constexpr inline int xlen = MUXDEF(CONF_RV64, 64, 32);
 constexpr inline bool rt_check = ISDEF(CONF_RT_CHECK);
 
