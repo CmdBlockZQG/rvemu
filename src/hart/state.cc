@@ -1,5 +1,5 @@
 #include "common.h"
-#include "cpu.h"
+#include "hart.h"
 
 HartState::HartState(int id) {
   pc = CONF_RESET_VEC;

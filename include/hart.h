@@ -1,5 +1,5 @@
-#ifndef __CPU_H__
-#define __CPU_H__
+#ifndef __HART_H__
+#define __HART_H__
 
 #include "common.h"
 

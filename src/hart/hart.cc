@@ -1,6 +1,6 @@
 #include "common.h"
 #include "soc.h"
-#include "cpu.h"
+#include "hart.h"
 
 Hart::Hart(int id): HartState(id) { }
 
