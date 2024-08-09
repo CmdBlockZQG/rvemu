@@ -35,6 +35,7 @@ static void parse_args(int argc, char *argv[]) {
 void init_log(const char *filename);
 void init_soc();
 void load_img(const char *filename);
+void sdb_mainloop(bool batch);
 
 int main(int argc, char *argv[]) {
   parse_args(argc, argv);
@@ -44,6 +45,7 @@ int main(int argc, char *argv[]) {
 
   load_img(img_file);
 
-  Log("Hello, rvemu!");
-  return 0;
+  sdb_mainloop(batch_mode);
+
+  return emu_state.exit_code();
 }

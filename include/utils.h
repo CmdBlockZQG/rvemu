@@ -59,4 +59,29 @@
     } \
   } while (0)
 
+// -------------------- state --------------------
+
+class GlobalState {
+  private:
+    int state;
+    int halt_ret;
+
+  public:
+    enum {
+      ST_RUNNING,
+      ST_STOP,
+      ST_END,
+      ST_ABORT,
+      ST_QUIT
+    };
+
+    void set_state(int state);
+    void set_ret(int ret);
+    int get_state();
+    int get_ret();
+    int exit_code();
+};
+
+extern GlobalState emu_state;
+
 #endif

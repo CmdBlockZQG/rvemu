@@ -75,6 +75,7 @@ void Hart::step() {
     word_t res;
 
     switch (funct3(inst)) {
+      case 0b000: res = src1 + imm; break;
       case 0b010: res = sgn(src1) < sgn(imm); break;
       case 0b011: res = src1 < imm; break;
       case 0b100: res = src1 ^ imm; break;
@@ -174,7 +175,9 @@ void Hart::step() {
 
     gpr_write(rd(inst), res);
   } else if (op == 0b11100) { // SYS
-  
+    emu_state.set_state(GlobalState::ST_END);
+    emu_state.set_ret(gpr_read(10));
+    return;
   } else {
     if constexpr (rt_check) assert(0);
   }
