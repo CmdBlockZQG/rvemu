@@ -204,10 +204,16 @@ void Hart::do_inst() {
         // mret
         case 0x30200073:
           dnpc = csr.mepc;
+          // 将mstatus.MPIE恢复到mstatus.MIE
+          csr.mstatus = (csr.mstatus & ~(1 << 3)) | (((csr.mstatus >> 7) & 1) << 3);
+          // 将mstatus.MPIE置为1
+          csr.mstatus = csr.mstatus | (1 << 7);
         break;
         default: if constexpr (rt_check) assert(0);
       }
     }
+  } else if (op == 0b00011) { // FENCE.I
+    if constexpr (rt_check) assert(inst == 0x0000100f);
   } else {
     if constexpr (rt_check) assert(0);
   }

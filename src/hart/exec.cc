@@ -9,6 +9,11 @@ void Hart::step() {
     csr.mcause = e.cause;
     csr.mepc = get_pc();
     set_pc(csr.mtvec);
+
+    // 将mstatus.MIE保存至mstatus.MPIE
+    csr.mstatus = (csr.mstatus & ~(1 << 7)) | (((csr.mstatus >> 3) & 1) << 7);
+    // 将mstatus.MIE置为0
+    csr.mstatus = csr.mstatus & ~(1 << 3);
     
     switch (e.cause) {
       case 11: // ecall
