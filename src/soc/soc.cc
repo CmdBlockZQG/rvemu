@@ -5,16 +5,19 @@
 #include "local-include/ram.h"
 #include "local-include/uart.h"
 #include "local-include/timer.h"
+#include "local-include/clint.h"
 
 #include <cstring>
 
 RAM mem {0x80000000, 128 * 1024 * 1024};
 UART uart {0x09000000};
 Timer timer {0x09001000};
+CLINT clint {0x2000000};
 static constexpr Device *devices[] = {
   &mem,
   &uart,
   &timer,
+  &clint,
 };
 
 void init_soc() {

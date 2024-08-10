@@ -1,6 +1,7 @@
 #ifndef __UTILS_H__
 #define __UTILS_H__
 
+#include <cstdint>
 #include <cstdio>
 #include <cassert>
 
@@ -83,5 +84,12 @@ class GlobalState {
 };
 
 extern GlobalState emu_state;
+
+// -------------------- misc --------------------
+
+static inline constexpr uint64_t bit_mask(int x) {
+  uint64_t t = 1;
+  return (t << x) - 1;
+}
 
 #endif

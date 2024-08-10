@@ -7,11 +7,6 @@ using inst_t = uint32_t;
 
 // -------------------- Helper --------------------
 
-static inline constexpr uint64_t bit_mask(int x) {
-  uint64_t t = 1;
-  return (t << x) - 1;
-}
-
 // 类似verilog中的 x[hi:lo]
 template<int H, int L>
 static inline uint64_t bits(uint64_t x) {
