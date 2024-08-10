@@ -3,7 +3,7 @@
 
 #include "common.h"
 
-#include "../src/hart/local-include/state.h"
+#include "hart/local-include/state.h"
 
 // 硬件线程
 class Hart : private HartState {
@@ -14,6 +14,7 @@ class Hart : private HartState {
   
     word_t inst_fetch();
     void do_inst();
+    void trap(word_t cause, word_t tval);
 
   public:
     Hart(int id);
