@@ -1,6 +1,7 @@
 #include "hart.h"
 
 #include "local-include/decode.h"
+#include "local-include/exception.h"
 
 static inline sword_t sgn(word_t x) {
   return *reinterpret_cast<sword_t *>(&x);
@@ -175,9 +176,38 @@ void Hart::do_inst() {
 
     gpr_write(rd(inst), res);
   } else if (op == 0b11100) { // SYS
-    emu_state.set_state(GlobalState::ST_END);
-    emu_state.set_ret(gpr_read(10));
-    return;
+    inst_t f3 = funct3(inst);
+    if (f3) { // zicsr
+      const word_t csr_addr = funct12(inst);
+      const word_t csr_rdata = csr.read(csr_addr);
+      word_t csr_wdata = 0;
+
+      word_t opnd;
+      if (f3 & 0b100) opnd = zimm(inst);
+      else opnd = gpr_read(rs1(inst));
+
+      switch (f3 & 0b11) {
+        case 0b01: csr_wdata = opnd; break;
+        case 0b10: csr_wdata = csr_rdata | opnd; break;
+        case 0b11: csr_wdata = csr_rdata & ~opnd; break;
+        default: if constexpr (rt_check) assert(0);
+      }
+
+      csr.write(csr_addr, csr_wdata);
+      gpr_write(rd(inst), csr_rdata);
+    } else {
+      switch (inst) {
+        // ecall
+        case 0x00000073: throw Exception {8 | get_priv_code(), 0};
+        // ebreak
+        case 0x00100073: throw Exception {3, 0};
+        // mret
+        case 0x30200073:
+          dnpc = csr.mepc;
+        break;
+        default: if constexpr (rt_check) assert(0);
+      }
+    }
   } else {
     if constexpr (rt_check) assert(0);
   }

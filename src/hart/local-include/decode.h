@@ -60,6 +60,10 @@ static inline word_t immJ(inst_t inst) {
          ( bits<30, 21>(inst) << 1 );
 }
 
+static inline word_t zimm(inst_t inst) {
+  return bits<19, 15>(inst);
+}
+
 // -------------------- 指令 --------------------
 static inline inst_t c_opcode(inst_t inst) {
   return bits<1, 0>(inst);
@@ -87,6 +91,10 @@ static inline inst_t funct3(inst_t inst) {
 
 static inline inst_t funct7(inst_t inst) {
   return bits<31, 25>(inst);
+}
+
+static inline inst_t funct12(inst_t inst) {
+  return bits<31, 20>(inst);
 }
 
 #endif
