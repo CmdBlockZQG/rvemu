@@ -42,6 +42,7 @@ word_t RAM::read(paddr_t addr, int len) {
     default:
       if constexpr (rt_check) assert(0);
   }
+  return 0;
 }
 
 void *RAM::get_ptr(paddr_t addr) {

@@ -1,5 +1,5 @@
-#ifndef __CPU_DECODE_H__
-#define __CPU_DECODE_H__
+#ifndef __HART_DECODE_H__
+#define __HART_DECODE_H__
 
 #include "common.h"
 
