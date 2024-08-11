@@ -10,8 +10,8 @@
 #include <cstring>
 
 RAM mem {0x80000000, 128 * 1024 * 1024};
-UART uart {0x09000000};
-Timer timer {0x09001000};
+UART uart {0x10000000};
+Timer timer {0x10001000};
 CLINT clint {0x20000000};
 static constexpr Device *devices[] = {
   &mem,

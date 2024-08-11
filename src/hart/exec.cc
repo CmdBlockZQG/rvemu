@@ -16,7 +16,7 @@ void Hart::trap(word_t cause, word_t tval) {
 }
 
 void Hart::step() {
-  // TODO: drive csr with clint signal
+  // TODO: drive csr with clint/plic signal
 
   try {
     do_inst();
@@ -25,6 +25,7 @@ void Hart::step() {
     if (((csr.mstatus >> 3) & 1) && clint.get_mtip()) { // 时钟中断
       trap(0x80000007, 0);
     }
+    IFDEF(CONF_UART_INPUT, uart.refill());
   } catch (Exception &e) { // 同步异常
     trap(e.cause, e.tval);
 
