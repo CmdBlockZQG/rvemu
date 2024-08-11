@@ -16,7 +16,7 @@ void Hart::trap(word_t cause, word_t tval) {
 }
 
 void Hart::step() {
-  // TODO: drive csr with clint/plic signal
+  // TODO: 根据中断情况更新CSR的值
 
   try {
     do_inst();

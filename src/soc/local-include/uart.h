@@ -16,7 +16,9 @@ class UART final : public Device {
     virtual void write(paddr_t addr, int len, word_t data) override;
     virtual word_t read(paddr_t addr, int len) override;
 
+    // 填充字符缓冲区
     void refill();
+    // 是否有中断请求
     word_t get_ip();
 };
 
