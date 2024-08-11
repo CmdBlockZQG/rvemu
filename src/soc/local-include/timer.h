@@ -5,7 +5,7 @@
 
 class Timer final : public Device {
   public:
-    Timer(paddr_t addr);
+    Timer(paddr_t base);
     virtual ~Timer() override;
 
     virtual void write(paddr_t addr, int len, word_t data) override;

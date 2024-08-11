@@ -4,20 +4,21 @@
 #include "local-include/device.h"
 #include "local-include/ram.h"
 #include "local-include/uart.h"
-#include "local-include/timer.h"
 #include "local-include/clint.h"
+#include "local-include/plic.h"
 
 #include <cstring>
 
-RAM mem {0x80000000, 128 * 1024 * 1024};
-UART uart {0x10000000};
-Timer timer {0x10001000};
+RAM   mem   {0x80000000, 128 * 1024 * 1024};
+UART  uart  {0x10000000};
 CLINT clint {0x20000000};
+PLIC  plic  {0x0c000000};
+
 static constexpr Device *devices[] = {
   &mem,
   &uart,
-  &timer,
   &clint,
+  &plic
 };
 
 void init_soc() {
@@ -27,7 +28,7 @@ void init_soc() {
 void paddr_write(paddr_t addr, int len, word_t data) {
   for (Device *dev : devices) {
     if (dev->in(addr)) {
-      dev->write(addr, len, data);
+      dev->write(addr - dev->get_base(), len, data);
       return;
     }
   }
@@ -37,7 +38,7 @@ void paddr_write(paddr_t addr, int len, word_t data) {
 word_t paddr_read(paddr_t addr, int len) {
   for (Device *dev : devices) {
     if (dev->in(addr)) {
-      return dev->read(addr, len);
+      return dev->read(addr - dev->get_base(), len);
     }
   }
   assert(0);

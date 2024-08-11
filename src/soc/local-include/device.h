@@ -13,6 +13,7 @@ class Device {
     virtual ~Device() = 0;
 
     bool in(paddr_t addr);
+    paddr_t get_base();
 
     virtual void write(paddr_t addr, int len, word_t data) = 0;
     virtual word_t read(paddr_t addr, int len) = 0;

@@ -13,7 +13,7 @@ class CLINT final : public Device {
     bool msip = false;
 
   public:
-    CLINT(paddr_t addr);
+    CLINT(paddr_t base);
     virtual ~CLINT() override;
 
     virtual void write(paddr_t addr, int len, word_t data) override;

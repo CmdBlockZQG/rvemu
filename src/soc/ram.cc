@@ -10,9 +10,9 @@ RAM::~RAM() {
 
 void RAM::write(paddr_t addr, int len, word_t data) {
   if constexpr (rt_check) {
-    assert(in(addr) && in(addr + len - 1));
+    assert(addr < size);
   }
-  void *host_addr = ptr + (addr - base);
+  void *host_addr = ptr + addr;
   switch (len) {
     case 1: *static_cast<uint8_t  *>(host_addr) = data; return;
     case 2: *static_cast<uint16_t *>(host_addr) = data; return;
@@ -28,9 +28,9 @@ void RAM::write(paddr_t addr, int len, word_t data) {
 
 word_t RAM::read(paddr_t addr, int len) {
   if constexpr (rt_check) {
-    assert(in(addr) && in(addr + len - 1));
+    assert(addr < size);
   }
-  void *host_addr = ptr + (addr - base);
+  void *host_addr = ptr + addr;
   switch (len) {
     case 1: return *static_cast<uint8_t  *>(host_addr);
     case 2: return *static_cast<uint16_t *>(host_addr);

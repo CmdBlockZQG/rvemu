@@ -10,7 +10,7 @@ class UART final : public Device {
     std::queue<char> fifo;
 
   public:
-    UART(paddr_t addr);
+    UART(paddr_t base);
     virtual ~UART() override;
 
     virtual void write(paddr_t addr, int len, word_t data) override;

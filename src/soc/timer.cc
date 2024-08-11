@@ -23,13 +23,13 @@ static uint64_t get_time() {
 
 word_t Timer::read(paddr_t addr, int len) {
   if constexpr (rt_check) {
-    if constexpr (xlen == 32) assert(len == 4 && (addr == base || addr == base + 4));
-    else assert(len == 8 && addr == base);
+    if constexpr (xlen == 32) assert(len == 4 && (addr == 0 || addr == 4));
+    else assert(len == 8 && addr == 0);
   }
 
   uint64_t now = get_time();
   if constexpr (xlen == 32) {
-    if (addr == base) return now;
+    if (addr == 0) return now;
     else return now >> 32;
   } else {
     return now;

@@ -22,14 +22,14 @@ UART::~UART() {
 }
 
 void UART::write(paddr_t addr, int len, word_t data) {
-  if (addr == base) {
+  if (addr == 0) {
     putchar(data & 0xff);
     fflush(stdout);
   }
 }
 
 word_t UART::read(paddr_t addr, int len) {
-  if (addr == base) {
+  if (addr == 0) {
     if (fifo.empty()) {
       return 0xff;
     } else {
@@ -37,7 +37,7 @@ word_t UART::read(paddr_t addr, int len) {
       fifo.pop();
       return c;
     }
-  } else if (addr == base + 5) {
+  } else if (addr == 5) {
     return 0x60 | (!fifo.empty());
   }
   return 0;
