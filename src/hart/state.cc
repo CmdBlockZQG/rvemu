@@ -2,7 +2,7 @@
 
 #include "local-include/state.h"
 
-HartState::HartState(int id): csr(id) {
+HartState::HartState(int hart_id): csr(hart_id) {
   pc = CONF_RESET_VEC;
   gpr[0] = 0;
 
@@ -21,6 +21,10 @@ word_t HartState::get_priv_code() {
 
 void HartState::set_priv(HartPriv priv) {
   this->priv = priv;
+}
+
+void HartState::set_priv_code(word_t code) {
+  this->priv = static_cast<HartPriv>(code);
 }
 
 vaddr_t HartState::get_pc() {
@@ -45,22 +49,29 @@ void HartState::gpr_write(int id, word_t data) {
   if (id) gpr[id] = data;
 }
 
-HartCSR::HartCSR(int id) {
-  mhartid = id;
+HartCSR::HartCSR(int hart_id) {
+  mhartid = hart_id;
 }
 
 word_t &HartState::addr_csr(word_t addr) {
   switch (addr & 0xfff) {
+    // RW S
     case 0x180: return csr.satp;
 
+    // RW M
     case 0x300: return csr.mstatus;
+    case 0x301: return csr.misa;
+    case 0x310: return csr.mstatush;
     case 0x305: return csr.mtvec;
     case 0x340: return csr.mscratch;
     case 0x341: return csr.mepc;
     case 0x342: return csr.mcause;
+    case 0x343: return csr.mtval;
 
+    // RO M
     case 0xf11: return csr.mvendorid;
     case 0xf12: return csr.marchid;
+    case 0xf13: return csr.mimpid;
     case 0xf14: return csr.mhartid;
     default: throw;
   }
@@ -82,5 +93,14 @@ void HartState::csr_write(word_t addr, word_t data) {
   word_t csr_priv = bits<9, 8>(addr);
   if (get_priv_code() < csr_priv) throw;
 
-  addr_csr(addr) = data;
+  switch (addr) {
+    case 0x300:
+      // mstatus只支持部分字段，剩余全部硬编码0
+      csr.mstatus = data & 0x7e19aa;
+    break;
+    case 0x301: // 忽略对misa的写入，不支持指令集功能选择
+    case 0x310: // 忽略对mstatush的写入，仅支持小端序
+    break;
+    default: addr_csr(addr) = data;
+  }
 }

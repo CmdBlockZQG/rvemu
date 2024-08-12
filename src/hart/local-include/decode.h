@@ -85,4 +85,13 @@ static inline inst_t funct12(inst_t inst) {
   return bits<31, 20>(inst);
 }
 
+// -------------------- CSR --------------------
+
+#define mstatus_SIE  ((csr.mstatus >> 1) & 1)
+#define mstatus_MIE  ((csr.mstatus >> 3) & 1)
+#define mstatus_SPIE ((csr.mstatus >> 5) & 1)
+#define mstatus_MPIE ((csr.mstatus >> 7) & 1)
+#define mstatus_SPP  ((csr.mstatus >> 8) & 1)
+#define mstatus_MPP  ((csr.mstatus >> 11) & 0b11)
+
 #endif

@@ -13,11 +13,13 @@ enum class HartPriv : word_t {
 // 硬件线程CSR
 class HartCSR {
   public:
-    word_t mvendorid = 0x79737978, marchid = 0x15fdeeb, mhartid;
-    word_t mstatus = 0x1800, mtvec, mepc, mcause;
+    word_t mhartid;
+    word_t mvendorid = 0x79737978, marchid = 0x15fdeeb, mimpid = 0;
+    word_t misa = 0x40141111; // RV32 IE MA SU
+    word_t mstatus = 0x1800, mstatush = 0, mtvec, mepc, mcause, mtval;
     word_t satp = 0, mscratch;
 
-    HartCSR(int id);
+    HartCSR(int hart_id);
 };
 
 // 硬件线程状态
@@ -30,13 +32,14 @@ class HartState {
     word_t &addr_csr(word_t addr);
   
   public:
-    HartState(int id);
+    HartState(int hart_id);
     ~HartState();
 
     HartCSR csr;
     HartPriv get_priv();
     word_t get_priv_code();
     void set_priv(HartPriv priv);
+    void set_priv_code(word_t code);
 
     vaddr_t get_pc();
     void set_pc(vaddr_t dnpc);

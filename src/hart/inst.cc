@@ -221,6 +221,16 @@ void Hart::do_inst() {
           csr.mstatus = (csr.mstatus & ~(1 << 3)) | (((csr.mstatus >> 7) & 1) << 3);
           // 将mstatus.MPIE置为1
           csr.mstatus = csr.mstatus | (1 << 7);
+          // 将特权级设置为mstatus.MPP
+          set_priv_code(mstatus_MPP);
+          // 若mstatus.MPP不为M模式，将mstatus_MPRV设为0
+          if (mstatus_MPP != 0b11) csr.mstatus = (csr.mstatus & ~(1 << 17));
+          // 将mstatus.MPP设为U模式，即0
+          csr.mstatus = (csr.mstatus & ~(0b11 << 11));
+        break;
+        // sret
+        case 0x10200073:
+          // TODO: sret P26
         break;
         default: if constexpr (rt_check) assert(0);
       }
