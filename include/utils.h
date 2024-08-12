@@ -92,4 +92,11 @@ static inline constexpr uint64_t bit_mask(int x) {
   return (t << x) - 1;
 }
 
+// 类似verilog中的 x[hi:lo]
+template<int H, int L>
+static inline uint64_t bits(uint64_t x) {
+  // return (x >> L) & ((1 << (H - L + 1)) - 1);
+  return (x >> L) & bit_mask(H - L + 1);
+}
+
 #endif

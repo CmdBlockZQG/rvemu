@@ -3,6 +3,7 @@
 
 #include "local-include/exception.h"
 
+// 捕获异常，trap到异常处理程序
 void Hart::trap(word_t cause, word_t tval) {
   csr.mcause = cause;
   csr.mepc = get_pc();

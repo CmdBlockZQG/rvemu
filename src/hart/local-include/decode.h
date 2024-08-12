@@ -7,13 +7,6 @@ using inst_t = uint32_t;
 
 // -------------------- Helper --------------------
 
-// 类似verilog中的 x[hi:lo]
-template<int H, int L>
-static inline uint64_t bits(uint64_t x) {
-  // return (x >> L) & ((1 << (H - L + 1)) - 1);
-  return (x >> L) & bit_mask(H - L + 1);
-}
-
 // 将B位补码进行符号拓展
 template<int B>
 static inline uint64_t sext(uint64_t x) {

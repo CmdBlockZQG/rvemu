@@ -179,13 +179,18 @@ void Hart::do_inst() {
     inst_t f3 = funct3(inst);
     if (f3) { // zicsr
       const word_t csr_addr = funct12(inst);
-      const word_t csr_rdata = csr.read(csr_addr);
-      word_t csr_wdata = 0;
+      word_t csr_rdata;
+      try {
+        csr_rdata = csr_read(csr_addr);
+      } catch (...) {
+        // 非法CSR读取，非法指令异常
+        throw Exception {2, inst};
+      }
 
+      word_t csr_wdata = 0;
       word_t opnd;
       if (f3 & 0b100) opnd = zimm(inst);
       else opnd = gpr_read(rs1(inst));
-
       switch (f3 & 0b11) {
         case 0b01: csr_wdata = opnd; break;
         case 0b10: csr_wdata = csr_rdata | opnd; break;
@@ -193,7 +198,15 @@ void Hart::do_inst() {
         default: if constexpr (rt_check) assert(0);
       }
 
-      csr.write(csr_addr, csr_wdata);
+      if (csr_wdata != csr_rdata) { // CSR写入
+        try {
+          csr_write(csr_addr, csr_wdata);
+        } catch (...) {
+          // 非法CSR写入，非法指令异常
+          throw Exception {2, inst};
+        }
+      }
+      
       gpr_write(rd(inst), csr_rdata);
     } else {
       switch (inst) {
