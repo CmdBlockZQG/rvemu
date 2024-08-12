@@ -9,7 +9,13 @@ void Hart::trap(word_t cause, word_t tval) {
   csr.mcause = cause;
   csr.mepc = get_pc();
   csr.mtval = tval;
-  set_pc(csr.mtvec);
+
+  if ((csr.mtvec & 0b11) == 1) {
+    set_pc((csr.mtvec & ~0b11) + 4 * cause);
+  } else {
+    set_pc(csr.mtvec);
+  }
+  
 
   // 将mstatus.MIE保存至mstatus.MPIE
   csr.mstatus = (csr.mstatus & ~(1 << 7)) | (mstatus_MIE << 7);

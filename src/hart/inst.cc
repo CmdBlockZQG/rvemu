@@ -209,7 +209,8 @@ void Hart::do_inst() {
       
       gpr_write(rd(inst), csr_rdata);
     } else {
-      switch (inst) {
+      if ((inst & ~(bit_mask(10) << 15)) == 0x12000073) { /* nop */ } // sfence.vma
+      else switch (inst) {
         // ecall
         case 0x00000073: throw Exception {8 | get_priv_code(), 0};
         // ebreak
@@ -232,6 +233,7 @@ void Hart::do_inst() {
         case 0x10200073:
           // TODO: sret P26
         break;
+        case 0x10500073: break; // wfi实现为nop
         default: if constexpr (rt_check) assert(0);
       }
     }
