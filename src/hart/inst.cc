@@ -179,6 +179,10 @@ void Hart::do_inst() {
     inst_t f3 = funct3(inst);
     if (f3) { // zicsr
       const word_t csr_addr = funct12(inst);
+      // TVM=1，在S模式操作satp会触发非法指令异常
+      if (priv == PRIV_S && csr_addr == 0x180 && mstatus_TVM) {
+        throw Exception {2, inst};
+      }
       word_t csr_rdata;
       try {
         csr_rdata = csr_read(csr_addr);
@@ -209,14 +213,18 @@ void Hart::do_inst() {
       
       gpr_write(rd(inst), csr_rdata);
     } else {
-      if ((inst & ~(bit_mask(10) << 15)) == 0x12000073) { /* nop */ } // sfence.vma
-      else switch (inst) {
+      if ((inst & ~(bit_mask(10) << 15)) == 0x12000073) { // sfence.vma
+        // TVM=1，在S模式执行SFENCE.VMA会触发非法指令异常
+        if (priv == PRIV_S && mstatus_TVM) throw Exception {2, inst};
+      } else switch (inst) {
         // ecall
         case 0x00000073: throw Exception {8 | priv, 0};
         // ebreak
         case 0x00100073: throw Exception {3, 0};
         // mret
         case 0x30200073:
+          // 若TSR=1，在S模式执行SRET会触发非法指令异常
+          if (mstatus_TSR && priv == PRIV_S) throw Exception {2, inst};
           dnpc = csr.mepc;
           // 将mstatus.MPIE恢复到mstatus.MIE
           csr.mstatus = (csr.mstatus & ~(1 << 3)) | (mstatus_MPIE << 3);
@@ -243,7 +251,12 @@ void Hart::do_inst() {
           // 将mstatus.SPP设为U模式，即0
           csr.mstatus = (csr.mstatus & ~(1 << 8));
         break;
-        case 0x10500073: break; // wfi实现为nop
+        // wfi
+        case 0x10500073:
+          // TW=1，在U模式执行wfi直接抛出非法指令异常
+          if (mstatus_TW && priv == PRIV_U) throw Exception {2, inst};
+          // 否则nop
+        break;
         default: if constexpr (rt_check) assert(0);
       }
     }

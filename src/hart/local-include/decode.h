@@ -93,5 +93,11 @@ static inline inst_t funct12(inst_t inst) {
 #define mstatus_MPIE ((csr.mstatus >> 7) & 1)
 #define mstatus_SPP  ((csr.mstatus >> 8) & 1)
 #define mstatus_MPP  ((csr.mstatus >> 11) & 0b11)
+#define mstatus_MPRV ((csr.mstatus >> 17) & 1)
+#define mstatus_SUM  ((csr.mstatus >> 18) & 1)
+#define mstatus_MXR  ((csr.mstatus >> 19) & 1)
+#define mstatus_TVM  ((csr.mstatus >> 20) & 1)
+#define mstatus_TW   ((csr.mstatus >> 21) & 1)
+#define mstatus_TSR  ((csr.mstatus >> 22) & 1)
 
 #endif
