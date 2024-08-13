@@ -32,6 +32,7 @@ void paddr_write(paddr_t addr, int len, word_t data) {
       return;
     }
   }
+  // TODO: Access fault
   assert(0);
 }
 
@@ -41,6 +42,7 @@ word_t paddr_read(paddr_t addr, int len) {
       return dev->read(addr - dev->get_base(), len);
     }
   }
+  // TODO: Access fault
   assert(0);
 }
 

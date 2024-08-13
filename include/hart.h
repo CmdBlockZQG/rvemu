@@ -8,7 +8,7 @@
 // 硬件线程
 class Hart : private HartState {
   private:
-    paddr_t mmu_translate(vaddr_t vaddr);
+    paddr_t mmu_translate(vaddr_t vaddr, int acs);
     void vaddr_write(vaddr_t vaddr, int len, word_t data);
     word_t vaddr_read(vaddr_t vaddr, int len);
   
