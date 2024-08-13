@@ -6,26 +6,10 @@ HartState::HartState(int hart_id): csr(hart_id) {
   pc = CONF_RESET_VEC;
   gpr[0] = 0;
 
-  priv = HartPriv::PRIV_M;
+  priv = PRIV_M;
 }
 
 HartState::~HartState() { }
-
-HartPriv HartState::get_priv() {
-  return priv;
-}
-
-word_t HartState::get_priv_code() {
-  return static_cast<word_t>(priv);
-}
-
-void HartState::set_priv(HartPriv priv) {
-  this->priv = priv;
-}
-
-void HartState::set_priv_code(word_t code) {
-  this->priv = static_cast<HartPriv>(code);
-}
 
 vaddr_t HartState::get_pc() {
   return pc;
@@ -93,13 +77,15 @@ static constexpr word_t sie_mask = 0x222;
 word_t HartState::csr_read(word_t addr) {
   // 检查当前特权级是否能访问CSR
   word_t csr_priv = bits<9, 8>(addr);
-  if (get_priv_code() < csr_priv) throw;
+  if (priv < csr_priv) throw;
   
   switch (addr) {
     // sstatus
     case 0x100: return csr.mstatus & sstatus_mask;
     // sie
     case 0x104: return csr.mie & sie_mask;
+    // sip
+    case 0x144: return csr.mip & sie_mask;
     // misa
     case 0x301: return 0x40141111; // RV32 IE MA SU
     // mstatush
@@ -123,7 +109,7 @@ void HartState::csr_write(word_t addr, word_t data) {
   if (csr_flag == 0b11) throw;
   // 检查当前特权级是否能访问CSR
   word_t csr_priv = bits<9, 8>(addr);
-  if (get_priv_code() < csr_priv) throw;
+  if (priv < csr_priv) throw;
 
   switch (addr) {
     // sstatus写入实际上是在写入mstatus的子集
@@ -138,10 +124,12 @@ void HartState::csr_write(word_t addr, word_t data) {
     case 0x144: break;
     // mstatus只支持部分字段，剩余全部硬编码0
     case 0x300: csr.mstatus = data & mstatus_mask; break;
+    // mideleg只支持委托s模式中断
+    case 0x303: csr.mideleg = data & sie_mask; break;
     // mie只支持除LCOFI之外的标准中断
     case 0x304: csr.mie = data & mie_mask; break;
-    // mip只读
-    case 0x344: break;
+    // mip中，S模式中断pending可写，其余只读
+    case 0x344: csr.mip = data & sie_mask; break;
     // 忽略对misa的写入，不支持指令集功能选择
     case 0x301: break;
     // 忽略对mstatush的写入，仅支持小端序

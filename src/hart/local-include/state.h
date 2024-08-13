@@ -4,7 +4,7 @@
 #include "common.h"
 
 // 硬件线程特权级
-enum class HartPriv : word_t {
+enum : word_t {
   PRIV_U = 0, // User
   PRIV_S = 1, // Supervisior
   PRIV_M = 3  // Machine
@@ -33,7 +33,6 @@ class HartState {
   private:
     vaddr_t pc;
     word_t gpr[MUXDEF(CONF_RVE, 16, 32)];
-    HartPriv priv;
 
     word_t &addr_csr(word_t addr);
   
@@ -42,10 +41,7 @@ class HartState {
     ~HartState();
 
     HartCSR csr;
-    HartPriv get_priv();
-    word_t get_priv_code();
-    void set_priv(HartPriv priv);
-    void set_priv_code(word_t code);
+    word_t priv;
 
     vaddr_t get_pc();
     void set_pc(vaddr_t dnpc);

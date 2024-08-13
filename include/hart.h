@@ -14,7 +14,8 @@ class Hart : private HartState {
   
     word_t inst_fetch();
     void do_inst();
-    void trap(word_t cause, word_t tval);
+    void mtrap(word_t mcause, word_t mtval);
+    void strap(word_t scause, word_t stval);
 
   public:
     Hart(int id);

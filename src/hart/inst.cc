@@ -212,18 +212,18 @@ void Hart::do_inst() {
       if ((inst & ~(bit_mask(10) << 15)) == 0x12000073) { /* nop */ } // sfence.vma
       else switch (inst) {
         // ecall
-        case 0x00000073: throw Exception {8 | get_priv_code(), 0};
+        case 0x00000073: throw Exception {8 | priv, 0};
         // ebreak
         case 0x00100073: throw Exception {3, 0};
         // mret
         case 0x30200073:
           dnpc = csr.mepc;
           // 将mstatus.MPIE恢复到mstatus.MIE
-          csr.mstatus = (csr.mstatus & ~(1 << 3)) | (((csr.mstatus >> 7) & 1) << 3);
+          csr.mstatus = (csr.mstatus & ~(1 << 3)) | (mstatus_MPIE << 3);
           // 将mstatus.MPIE置为1
           csr.mstatus = csr.mstatus | (1 << 7);
           // 将特权级设置为mstatus.MPP
-          set_priv_code(mstatus_MPP);
+          priv = mstatus_MPP;
           // 若mstatus.MPP不为M模式，将mstatus_MPRV设为0
           if (mstatus_MPP != 0b11) csr.mstatus = (csr.mstatus & ~(1 << 17));
           // 将mstatus.MPP设为U模式，即0
@@ -231,7 +231,17 @@ void Hart::do_inst() {
         break;
         // sret
         case 0x10200073:
-          // TODO: sret P26
+          dnpc = csr.sepc;
+          // 将mstatus.SPIE恢复到mstatus.SIE
+          csr.mstatus = (csr.mstatus & ~(1 << 1)) | (mstatus_SPIE << 1);
+          // 将mstatus.SPIE置为1
+          csr.mstatus = csr.mstatus | (1 << 5);
+          // 将特权级设置为mstatus.SPP
+          priv = mstatus_SPP;
+          // 若mstatus.M=SPP不为M模式（总是成立），将mstatus_MPRV设为0
+          csr.mstatus = (csr.mstatus & ~(1 << 17));
+          // 将mstatus.SPP设为U模式，即0
+          csr.mstatus = (csr.mstatus & ~(1 << 8));
         break;
         case 0x10500073: break; // wfi实现为nop
         default: if constexpr (rt_check) assert(0);
