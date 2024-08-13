@@ -77,6 +77,10 @@ static inline inst_t funct3(inst_t inst) {
   return bits<14, 12>(inst);
 }
 
+static inline inst_t funct5(inst_t inst) {
+  return bits<31, 27>(inst);
+}
+
 static inline inst_t funct7(inst_t inst) {
   return bits<31, 25>(inst);
 }

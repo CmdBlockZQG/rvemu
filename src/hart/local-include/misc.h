@@ -1,5 +1,5 @@
-#ifndef __HART_EXCEPTION_H__
-#define __HART_EXCEPTION_H__
+#ifndef __HART_MISC_H__
+#define __HART_MISC_H__
 
 #include "common.h"
 
@@ -8,6 +8,12 @@ struct Exception {
   word_t tval;
 
   Exception(word_t cause, word_t tval);
+};
+
+enum : int {
+  ACS_INST  = 0,
+  ACS_LOAD  = 1,
+  ACS_STORE = 2
 };
 
 #endif

@@ -1,7 +1,8 @@
 #include "hart.h"
+#include "soc.h"
 
 #include "local-include/decode.h"
-#include "local-include/exception.h"
+#include "local-include/misc.h"
 
 static inline sword_t sgn(word_t x) {
   return *reinterpret_cast<sword_t *>(&x);
@@ -51,11 +52,11 @@ void Hart::do_inst() {
     word_t data = 0;
 
     switch (funct3(inst)) {
-      case 0b000: data = sext<8>(vaddr_read(addr, 1)); break;
-      case 0b001: data = sext<16>(vaddr_read(addr, 2)); break;
-      case 0b010: data = sext<32>(vaddr_read(addr, 4)); break;
-      case 0b100: data = vaddr_read(addr, 1); break;
-      case 0b101: data = vaddr_read(addr, 2); break;
+      case 0b000: data = sext<8>(vaddr_load(addr, 1)); break;
+      case 0b001: data = sext<16>(vaddr_load(addr, 2)); break;
+      case 0b010: data = sext<32>(vaddr_load(addr, 4)); break;
+      case 0b100: data = vaddr_load(addr, 1); break;
+      case 0b101: data = vaddr_load(addr, 2); break;
       default: if constexpr (rt_check) assert(0);
     }
 
@@ -65,9 +66,9 @@ void Hart::do_inst() {
     word_t data = gpr_read(rs2(inst));
 
     switch (funct3(inst)) {
-      case 0b000: vaddr_write(addr, 1, data); break;
-      case 0b001: vaddr_write(addr, 2, data); break;
-      case 0b010: vaddr_write(addr, 4, data); break;
+      case 0b000: vaddr_store(addr, 1, data); break;
+      case 0b001: vaddr_store(addr, 2, data); break;
+      case 0b010: vaddr_store(addr, 4, data); break;
       default: if constexpr (rt_check) assert(0);
     }
   } else if (op == 0b00100) { // CALRI
@@ -262,8 +263,48 @@ void Hart::do_inst() {
     }
   } else if (op == 0b00011) { // FENCE.I
     if constexpr (rt_check) assert(inst == 0x0000100f);
+  } else if (op == 0b01011) { // A 原子指令拓展
+    static vaddr_t reserved_addr = 0;
+    if (funct3(inst) != 0b010) throw Exception {2, inst};
+    inst_t f5 = funct5(inst);
+    word_t vaddr = gpr_read(rs1(inst)); // src1
+    if (f5 == 0b00010) { // LR
+      if (rs2(inst)) throw Exception {2, inst};
+      word_t data = vaddr_load(vaddr, 4);
+      gpr_write(rd(inst), sext<32>(data));
+      reserved_addr = vaddr;
+    } else if (f5 == 0b00011) { // SC
+      if (reserved_addr == vaddr) {
+        word_t src2 = gpr_read(rs2(inst));
+        vaddr_store(vaddr, 4, src2);
+        gpr_write(rd(inst), 0);
+      } else {
+        gpr_write(rd(inst), 1);
+      }
+      reserved_addr = 0;
+    } else { // AMO
+      word_t src2 = gpr_read(rs2(inst));
+      word_t paddr = mmu_translate(vaddr, ACS_STORE);
+      word_t t = paddr_read(paddr, 4);
+      word_t data;
+      switch (f5) {
+        case 0b00001: data = src2; break;
+        case 0b00000: data = t + src2; break;
+        case 0b00100: data = t ^ src2; break;
+        case 0b01100: data = t & src2; break;
+        case 0b01000: data = t | src2; break;
+        case 0b10000: data = std::min(sgn(t), sgn(src2)); break;
+        case 0b10100: data = std::max(sgn(t), sgn(src2)); break;
+        case 0b11000: data = std::min(t, src2); break;
+        case 0b11100: data = std::max(t, src2); break;
+        default: throw Exception {2, inst};
+      }
+      paddr_write(paddr, 4, data);
+      gpr_write(rd(inst), sext<32>(t));
+    }
   } else {
-    if constexpr (rt_check) assert(0);
+    Log("Warning: invalid instruction: %08x", inst);
+    throw Exception {2, inst};
   }
 
   set_pc(dnpc);

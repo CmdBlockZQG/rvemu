@@ -1,8 +1,10 @@
 #include "hart.h"
 #include "soc.h"
 
-#include "local-include/exception.h"
 #include "local-include/decode.h"
+#include "local-include/misc.h"
+
+Exception::Exception(word_t cause, word_t tval): cause(cause), tval(tval) { }
 
 void Hart::step() {
   // 根据中断信号更新mip

@@ -2,18 +2,12 @@
 #include "soc.h"
 #include "hart.h"
 
-#include "local-include/exception.h"
 #include "hart/local-include/decode.h"
+#include "hart/local-include/misc.h"
 
 Hart::Hart(int id): HartState(id) { }
 
 Hart::~Hart() { }
-
-enum : int {
-  ACS_INST  = 0,
-  ACS_LOAD  = 1,
-  ACS_STORE = 2
-};
 
 paddr_t Hart::mmu_translate(vaddr_t vaddr, int acs) {
   word_t satp = csr.satp;
@@ -95,12 +89,14 @@ paddr_t Hart::mmu_translate(vaddr_t vaddr, int acs) {
   return paddr;
 }
 
-void Hart::vaddr_write(vaddr_t vaddr, int len, word_t data) {
+void Hart::vaddr_store(vaddr_t vaddr, int len, word_t data) {
+  if (vaddr & (len - 1)) throw Exception {6, vaddr};
   word_t paddr = mmu_translate(vaddr, ACS_STORE);
   paddr_write(paddr, len, data);
 }
 
-word_t Hart::vaddr_read(vaddr_t vaddr, int len) {
+word_t Hart::vaddr_load(vaddr_t vaddr, int len) {
+  if (vaddr & (len - 1)) throw Exception {4, vaddr};
   word_t paddr = mmu_translate(vaddr, ACS_LOAD);
   return paddr_read(paddr, len);
 }
@@ -108,5 +104,7 @@ word_t Hart::vaddr_read(vaddr_t vaddr, int len) {
 word_t Hart::inst_fetch() {
   vaddr_t vaddr = get_pc();
   paddr_t paddr = mmu_translate(vaddr, ACS_INST);
+  // 指令地址未对齐
+  if ((paddr & 0b11) != 0) throw Exception {0, vaddr};
   return paddr_read(paddr, 4);
 }

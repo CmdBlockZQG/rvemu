@@ -9,8 +9,8 @@
 class Hart : private HartState {
   private:
     paddr_t mmu_translate(vaddr_t vaddr, int acs);
-    void vaddr_write(vaddr_t vaddr, int len, word_t data);
-    word_t vaddr_read(vaddr_t vaddr, int len);
+    void vaddr_store(vaddr_t vaddr, int len, word_t data);
+    word_t vaddr_load(vaddr_t vaddr, int len);
   
     word_t inst_fetch();
     void do_inst();
