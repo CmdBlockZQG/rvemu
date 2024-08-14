@@ -102,6 +102,7 @@ word_t Hart::vaddr_load(vaddr_t vaddr, int len) {
 }
 
 word_t Hart::inst_fetch() {
+  // Log_write("pc: %08x\n", get_pc());
   vaddr_t vaddr = get_pc();
   paddr_t paddr = mmu_translate(vaddr, ACS_INST);
   // 指令地址未对齐

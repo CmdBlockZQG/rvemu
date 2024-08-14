@@ -261,8 +261,8 @@ void Hart::do_inst() {
         default: if constexpr (rt_check) assert(0);
       }
     }
-  } else if (op == 0b00011) { // FENCE.I
-    if constexpr (rt_check) assert(inst == 0x0000100f);
+  } else if (op == 0b00011) { // FENCE
+    // nop
   } else if (op == 0b01011) { // A 原子指令拓展
     static vaddr_t reserved_addr = 0;
     if (funct3(inst) != 0b010) throw Exception {2, inst};

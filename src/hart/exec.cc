@@ -44,6 +44,7 @@ void Hart::step() {
       if constexpr (rt_check) assert(f);
     }
   } catch (Exception &e) { // 同步异常
+    // Log("Exception: %d, 0x%08x, at pc=0x%08x", e.cause, e.tval, get_pc());
     if (priv == PRIV_M) {
       mtrap(e.cause, e.tval);
     } else {

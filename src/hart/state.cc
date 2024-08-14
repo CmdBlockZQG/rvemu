@@ -62,8 +62,8 @@ word_t &HartState::addr_csr(word_t addr) {
     case 0xf14: return csr.mhartid;
 
     default:
-      Log("Warning: access non-exist CSR: %03x", addr);
-      throw;
+      // Log("Warning: access non-exist CSR: 0x%03x at " FMT_VADDR, addr, get_pc());
+      throw 0;
   }
 }
 
@@ -77,8 +77,8 @@ static constexpr word_t sie_mask = 0x222;
 word_t HartState::csr_read(word_t addr) {
   // 检查当前特权级是否能访问CSR
   word_t csr_priv = bits<9, 8>(addr);
-  if (priv < csr_priv) throw;
-  
+  if (priv < csr_priv) throw 0;
+
   switch (addr) {
     // sstatus
     case 0x100: return csr.mstatus & sstatus_mask;
@@ -106,10 +106,10 @@ word_t HartState::csr_read(word_t addr) {
 void HartState::csr_write(word_t addr, word_t data) {
   // 检查CSR是否只读
   word_t csr_flag = bits<11, 10>(addr);
-  if (csr_flag == 0b11) throw;
+  if (csr_flag == 0b11) throw 0;
   // 检查当前特权级是否能访问CSR
   word_t csr_priv = bits<9, 8>(addr);
-  if (priv < csr_priv) throw;
+  if (priv < csr_priv) throw 0;
 
   switch (addr) {
     // sstatus写入实际上是在写入mstatus的子集

@@ -33,6 +33,7 @@ void paddr_write(paddr_t addr, int len, word_t data) {
     }
   }
   // TODO: Access fault
+  Log("Writing invalid paddr: " FMT_PADDR, addr);
   assert(0);
 }
 
@@ -43,6 +44,7 @@ word_t paddr_read(paddr_t addr, int len) {
     }
   }
   // TODO: Access fault
+  Log("Reading invalid paddr: " FMT_PADDR, addr);
   assert(0);
 }
 
