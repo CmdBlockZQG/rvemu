@@ -105,7 +105,5 @@ word_t Hart::inst_fetch() {
   // Log_write("pc: %08x\n", get_pc());
   vaddr_t vaddr = get_pc();
   paddr_t paddr = mmu_translate(vaddr, ACS_INST);
-  // 指令地址未对齐
-  if ((paddr & 0b11) != 0) throw Exception {0, vaddr};
   return paddr_read(paddr, 4);
 }

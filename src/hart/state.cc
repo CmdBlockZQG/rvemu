@@ -87,7 +87,7 @@ word_t HartState::csr_read(word_t addr) {
     // sip
     case 0x144: return csr.mip & sie_mask;
     // misa
-    case 0x301: return 0x40141111; // RV32 IE MA SU
+    case 0x301: return 0x40141115; // RV32 IE MAC SU
     // mstatush
     case 0x310: return 0;
     // mvendorid

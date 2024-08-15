@@ -1,9 +1,9 @@
 # RVEMU
 RISC-V全系统模拟器，C++实现
 
-- RISC-V 32 IMA（WIP）
+- RISC-V 32 IMAC
 - zicsr zifencei
-- 支持S模式和U模式（WIP）
+- 支持S模式和U模式
 - 只支持单Hart
 - 中断只由CLINT和PLIC提供
 - 不支持指令集功能选择，misa只读，写入被忽略
