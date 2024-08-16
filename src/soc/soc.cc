@@ -9,7 +9,7 @@
 
 #include <cstring>
 
-RAM   mem   {0x80000000, 128 * 1024 * 1024};
+RAM   mem   {0x80000000, 0x10000000};
 UART  uart  {0x10000000};
 CLINT clint {0x20000000};
 PLIC  plic  {0x0c000000};
@@ -32,9 +32,8 @@ void paddr_write(paddr_t addr, int len, word_t data) {
       return;
     }
   }
-  // TODO: Access fault
   Log("Writing invalid paddr: " FMT_PADDR, addr);
-  assert(0);
+  throw 0;
 }
 
 word_t paddr_read(paddr_t addr, int len) {
@@ -43,9 +42,8 @@ word_t paddr_read(paddr_t addr, int len) {
       return dev->read(addr - dev->get_base(), len);
     }
   }
-  // TODO: Access fault
   Log("Reading invalid paddr: " FMT_PADDR, addr);
-  assert(0);
+  throw 0;
 }
 
 void load_img(const char *filename) {

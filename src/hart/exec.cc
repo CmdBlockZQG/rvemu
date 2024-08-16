@@ -58,11 +58,15 @@ void Hart::step() {
       }
     }
     
-    if (e.cause == 3) { // ebreak
-      emu_state.set_state(GlobalState::ST_END);
-      emu_state.set_ret(gpr_read(10));
+    if constexpr (ISDEF(CONF_AM)) {
+      if (e.cause == 3) { // ebreak
+        emu_state.set_state(GlobalState::ST_END);
+        emu_state.set_ret(gpr_read(10));
+      }
     }
   }
+
+  csr.counter += 1;
 }
 
 // trap到M模式异常处理程序

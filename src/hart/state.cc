@@ -62,7 +62,7 @@ word_t &HartState::addr_csr(word_t addr) {
     case 0xf14: return csr.mhartid;
 
     default:
-      // Log("Warning: access non-exist CSR: 0x%03x at " FMT_VADDR, addr, get_pc());
+      Log("Warning: access non-exist CSR: 0x%03x at " FMT_VADDR, addr, get_pc());
       throw 0;
   }
 }
@@ -71,7 +71,7 @@ static constexpr word_t mstatus_mask = 0x007e19aa;
 static constexpr word_t sstatus_mask = 0x000c0122;
 static constexpr word_t mie_mask = 0xaaa;
 static constexpr word_t sie_mask = 0x222;
-// WARN: 性能监视器, xenvcfg, mseccfg, PMP未实现
+// WARN: xenvcfg, mseccfg, PMP未实现
 // 会抛出非法指令异常
 
 word_t HartState::csr_read(word_t addr) {
@@ -84,12 +84,18 @@ word_t HartState::csr_read(word_t addr) {
     case 0x100: return csr.mstatus & sstatus_mask;
     // sie
     case 0x104: return csr.mie & sie_mask;
+    // scounteren
+    case 0x106: return 0;
     // sip
     case 0x144: return csr.mip & sie_mask;
     // misa
     case 0x301: return 0x40141115; // RV32 IE MAC SU
     // mstatush
     case 0x310: return 0;
+    // cycle time instret
+    case 0xc00: case 0xc01: case 0xc02: return csr.counter;
+    // cycleh timeh instreth
+    case 0xc80: case 0xc81: case 0xc82: return csr.counter >> 32;
     // mvendorid
     case 0xf11: return 0x79737978;
     // marchid
@@ -120,6 +126,8 @@ void HartState::csr_write(word_t addr, word_t data) {
     case 0x104:
       csr.mie = (csr.mie & ~sie_mask) | (data & sie_mask);
     break;
+    // scounteren 只读0
+    case 0x106: break;
     // sip只读
     case 0x144: break;
     // mstatus只支持部分字段，剩余全部硬编码0

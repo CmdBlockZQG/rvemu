@@ -2,6 +2,7 @@
 #define __CONFIG_H__
 
 #define CONF_RT_CHECK 1
+// #define CONF_AM 1
 
 // #define CONF_RV64 1
 // #define CONF_RVE 1

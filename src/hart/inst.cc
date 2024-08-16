@@ -399,8 +399,6 @@ void Hart::do_inst() {
         case 0x00100073: throw Exception {3, 0};
         // mret
         case 0x30200073:
-          // 若TSR=1，在S模式执行SRET会触发非法指令异常
-          if (mstatus_TSR && priv == PRIV_S) throw EXC_II;
           dnpc = csr.mepc;
           // 将mstatus.MPIE恢复到mstatus.MIE
           csr.mstatus = (csr.mstatus & ~(1 << 3)) | (mstatus_MPIE << 3);
@@ -415,6 +413,8 @@ void Hart::do_inst() {
         break;
         // sret
         case 0x10200073:
+          // 若TSR=1，在S模式执行SRET会触发非法指令异常
+          if (mstatus_TSR && priv == PRIV_S) throw EXC_II;
           dnpc = csr.sepc;
           // 将mstatus.SPIE恢复到mstatus.SIE
           csr.mstatus = (csr.mstatus & ~(1 << 1)) | (mstatus_SPIE << 1);
@@ -460,7 +460,12 @@ void Hart::do_inst() {
     } else { // AMO
       word_t src2 = gpr_read(rs2(inst));
       word_t paddr = mmu_translate(vaddr, ACS_STORE);
-      word_t t = paddr_read(paddr, 4);
+      word_t t;
+      try {
+        t = paddr_read(paddr, 4);
+      } catch (...) {
+        throw Exception {7, vaddr};
+      }
       word_t data;
       switch (f5) {
         case 0b00001: data = src2; break;
@@ -474,7 +479,11 @@ void Hart::do_inst() {
         case 0b11100: data = std::max(t, src2); break;
         default: throw EXC_II;
       }
-      paddr_write(paddr, 4, data);
+      try {
+        paddr_write(paddr, 4, data);
+      } catch (...) {
+        assert(0);
+      }
       gpr_write(rd(inst), sext<32>(t));
     }
   } else {

@@ -25,6 +25,8 @@ class HartCSR {
 
     word_t stvec, sepc, scause, stval;
 
+    uint64_t counter = 0; // time cycle instret
+
     HartCSR(int hart_id);
 };
 

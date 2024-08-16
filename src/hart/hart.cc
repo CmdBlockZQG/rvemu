@@ -11,11 +11,16 @@ Hart::~Hart() { }
 
 paddr_t Hart::mmu_translate(vaddr_t vaddr, int acs) {
   word_t satp = csr.satp;
-  if (priv == PRIV_M || !(satp >> 31)) return vaddr;
+  // MPRV=1时，load&store使用mstatus.MPP特权级
+  word_t act_priv = mstatus_MPRV && (acs != ACS_INST) ? mstatus_MPP : priv;
+  if (act_priv == PRIV_M || !(satp >> 31)) return vaddr;
 
   // page fault在不同访问时的cause编号
   static constexpr word_t pf_cause[3] = {12, 13, 15};
+  // access fault在不同访问时的cause编号
+  static constexpr word_t af_cause[3] = {1, 5, 7};
   #define EXC_PF ((Exception {pf_cause[acs], vaddr}))
+  #define EXC_AF ((Exception {af_cause[acs], vaddr}))
 
   // vpn在虚拟地址中的低位
   constexpr int vpn_off[] = {12, 22};
@@ -26,7 +31,11 @@ paddr_t Hart::mmu_translate(vaddr_t vaddr, int acs) {
   for (i = 1; i >= 0; --i) {
     const paddr_t vpn = (vaddr >> vpn_off[i]) & 0x3ff;
     const paddr_t pte_addr = pt_addr | (vpn << 2);
-    pte = paddr_read(pte_addr, 4);
+    try {
+      pte = paddr_read(pte_addr, 4);
+    } catch (...) {
+      throw EXC_AF;
+    }
     // 检查页表项是否非法
     if (!(pte & 1) || ((pte >> 1) & 0b11) == 0b10) {
       throw EXC_PF;
@@ -38,8 +47,6 @@ paddr_t Hart::mmu_translate(vaddr_t vaddr, int acs) {
     }
     // 找到叶子页表项
     // 检查特权级权限
-    // MPRV=1时，load&store使用mstatus.MPP特权级
-    word_t act_priv = mstatus_MPRV && (acs != ACS_INST) ? mstatus_MPP : priv;
     bool flag_u = (pte >> 4) & 1; // U == 1 ?
     if (act_priv == PRIV_U) {
       if (!flag_u) throw EXC_PF; // U模式仅能访问U=1的页面
@@ -74,7 +81,12 @@ paddr_t Hart::mmu_translate(vaddr_t vaddr, int acs) {
     word_t pte_up = pte | (1 << 6); // 将A位设为1
     if (acs == ACS_STORE) pte_up |= 1 << 7; // store则将D位设为1
     if (pte_up != pte) { // 更新页表项
-      paddr_write(pte_addr, 4, pte_up);
+      try {
+        paddr_write(pte_addr, 4, pte_up);
+      } catch (...) {
+        // 读取时没有触发access fault，写入时也不应该 
+        assert(0);
+      }
     }
     break; // 地址翻译成功完成
   }
@@ -92,18 +104,34 @@ paddr_t Hart::mmu_translate(vaddr_t vaddr, int acs) {
 void Hart::vaddr_store(vaddr_t vaddr, int len, word_t data) {
   if (vaddr & (len - 1)) throw Exception {6, vaddr};
   word_t paddr = mmu_translate(vaddr, ACS_STORE);
-  paddr_write(paddr, len, data);
+  try {
+    paddr_write(paddr, len, data);
+  } catch (...) {
+    throw Exception {7, vaddr};
+  }
 }
 
 word_t Hart::vaddr_load(vaddr_t vaddr, int len) {
   if (vaddr & (len - 1)) throw Exception {4, vaddr};
   word_t paddr = mmu_translate(vaddr, ACS_LOAD);
-  return paddr_read(paddr, len);
+  word_t data;
+  try {
+    data = paddr_read(paddr, len);
+  } catch (...) {
+    throw Exception {5, vaddr};
+  }
+  return data;
 }
 
 word_t Hart::inst_fetch() {
   // Log_write("pc: %08x\n", get_pc());
   vaddr_t vaddr = get_pc();
   paddr_t paddr = mmu_translate(vaddr, ACS_INST);
-  return paddr_read(paddr, 4);
+  word_t data;
+  try {
+    data = paddr_read(paddr, 4);
+  } catch (...) {
+    throw Exception {1, vaddr};
+  }
+  return data;
 }
