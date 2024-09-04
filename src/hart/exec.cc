@@ -4,11 +4,12 @@
 #include "local-include/decode.h"
 #include "local-include/misc.h"
 
+#include <initializer_list>
+
 Exception::Exception(word_t cause, word_t tval): cause(cause), tval(tval) { }
 
 void Hart::step() {
   // 根据中断信号更新mip
-  IFDEF(CONF_UART_INPUT, uart.refill());
   word_t mip_i = (clint.get_msip() << 3 ) |
                  (clint.get_mtip() << 7 ) |
                  ( plic.get_meip() << 11) ;

@@ -4,22 +4,17 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-static constexpr bool uart_input = ISDEF(CONF_UART_INPUT);
+static const char *uart_input_ptr = " "
+                                    "busybox | head -n4\n"
+                                    "ls\n";
 
-UART::UART(paddr_t addr): Device(addr, 0x1000) {
-  if constexpr (uart_input) {
-    int fd = stdin->_fileno;
-    fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) | O_NONBLOCK);
-    // assert(system("stty raw") == 0);
-    // assert(system("stty -echo") == 0);
-  }
+static inline bool input_available() {
+  return *uart_input_ptr != '\0';
 }
 
-UART::~UART() {
-  if constexpr (uart_input) {
-    // assert(system("stty cooked") == 0);
-  }
-}
+UART::UART(paddr_t addr): Device(addr, 0x1000) { }
+
+UART::~UART() { }
 
 void UART::write(paddr_t addr, int len, word_t data) {
   if (addr == 0) {
@@ -30,29 +25,17 @@ void UART::write(paddr_t addr, int len, word_t data) {
 
 word_t UART::read(paddr_t addr, int len) {
   if (addr == 0) {
-    if (fifo.empty()) {
-      return 0xff;
+    if (input_available()) {
+      return *uart_input_ptr++;
     } else {
-      char c = fifo.front();
-      fifo.pop();
-      return c;
+      return 0xff;
     }
   } else if (addr == 5) {
-    return 0x60 | (!fifo.empty());
+    return 0x60 | input_available();
   }
   return 0;
 }
 
-static void _refill(std::queue<char> &q) {
-  for (char c; read(stdin->_fileno, &c, 1) > 0; ) {
-    q.push(c);
-  }
-}
-
-void UART::refill() {
-  _refill(fifo);
-}
-
 word_t UART::get_ip() {
-  return !fifo.empty();
+  return input_available();
 }

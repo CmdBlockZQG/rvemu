@@ -4,6 +4,8 @@
 #include "local-include/decode.h"
 #include "local-include/misc.h"
 
+#include <algorithm>
+
 static inline sword_t sgn(word_t x) {
   return *reinterpret_cast<sword_t *>(&x);
 }
@@ -399,6 +401,7 @@ void Hart::do_inst() {
         case 0x00100073: throw Exception {3, 0};
         // mret
         case 0x30200073:
+          if (priv < PRIV_M) throw EXC_II;
           dnpc = csr.mepc;
           // 将mstatus.MPIE恢复到mstatus.MIE
           csr.mstatus = (csr.mstatus & ~(1 << 3)) | (mstatus_MPIE << 3);
@@ -413,6 +416,7 @@ void Hart::do_inst() {
         break;
         // sret
         case 0x10200073:
+          if (priv < PRIV_S) throw EXC_II;
           // 若TSR=1，在S模式执行SRET会触发非法指令异常
           if (mstatus_TSR && priv == PRIV_S) throw EXC_II;
           dnpc = csr.sepc;
@@ -422,7 +426,7 @@ void Hart::do_inst() {
           csr.mstatus = csr.mstatus | (1 << 5);
           // 将特权级设置为mstatus.SPP
           priv = mstatus_SPP;
-          // 若mstatus.M=SPP不为M模式（总是成立），将mstatus_MPRV设为0
+          // 若mstatus.SPP不为M模式（总是成立），将mstatus_MPRV设为0
           csr.mstatus = (csr.mstatus & ~(1 << 17));
           // 将mstatus.SPP设为U模式，即0
           csr.mstatus = (csr.mstatus & ~(1 << 8));
